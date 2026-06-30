@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tamabicho Amazônia 🌿</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --jungle: #1B4332;
+    --leaf:   #2D6A4F;
+    --lime:   #74C69D;
+    --sand:   #F8F0DC;
+    --gold:   #FCA311;
+    --pink:   #FF99C8;
+    --blue:   #0077B6;
+    --red:    #E63946;
+    --ink:    #0D1B0F;
+    --white:  #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 10%, rgba(116,198,157,0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 90%, rgba(252,163,17,0.12) 0%, transparent 55%);
+  }
+  h1,h2,h3 { font-family: 'Fredoka', sans-serif; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; padding: 20px; max-width: 480px; margin: 0 auto; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white);
+    border: 2.5px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    border: 2.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 12px 20px;
+    transition: transform .1s, box-shadow .1s;
+    background: var(--white);
+    color: var(--ink);
+  }
+  .btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+  .btn-gold  { background: var(--gold); }
+  .btn-leaf  { background: var(--leaf); color: var(--white); }
+  .btn-pink  { background: var(--pink); }
+  .btn-red   { background: var(--red);  color: var(--white); }
+  .btn-blue  { background: var(--blue); color: var(--white); }
+  .btn:disabled { opacity: .45; pointer-events: none; }
+  .btn-full  { width: 100%; }
+
+  /* ── INPUTS ── */
+  input[type=text], input[type=email], input[type=password] {
+    width: 100%;
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    background: var(--sand);
+    outline: none;
+    margin-bottom: 12px;
+  }
+  input:focus { box-shadow: 0 0 0 3px rgba(252,163,17,.35); }
+  label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 2px solid var(--ink); border-radius: 99px;
+    padding: 3px 10px; font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .07em;
+    color: var(--white);
+  }
+
+  /* ── STAT BARS ── */
+  .stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .stat-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .stat-info { flex: 1; }
+  .stat-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+  .stat-track { height: 14px; border-radius: 99px; border: 2px solid var(--ink); background: var(--sand); overflow: hidden; }
+  .stat-fill  { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.34,1.56,.64,1); }
+
+  /* ── AVATAR AREA ── */
+  #avatar-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px 0 10px;
+  }
+  #pet-svg { width: 200px; height: 200px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes shake  { 0%,100%{transform:rotate(0)}  25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+  @keyframes pulse  { 0%,100%{transform:scale(1)}   50%{transform:scale(1.08)} }
+  .mood-shake { animation: shake .35s ease-in-out 3 !important; }
+  .mood-pulse { animation: pulse  1s  ease-in-out infinite !important; }
+
+  /* ── ACTION GRID ── */
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .action-btn {
+    border: 2.5px solid var(--ink); border-radius: 20px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 14px 10px;
+    cursor: pointer; background: var(--white);
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .action-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+  .action-btn:disabled { opacity: .4; pointer-events: none; }
+  .action-icon {
+    width: 44px; height: 44px; border-radius: 13px;
+    border: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .action-label { font-weight: 800; font-size: 15px; }
+
+  /* ── CHAT ── */
+  #chat-fab {
+    position: fixed; bottom: 22px; right: 22px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--gold); border: 2.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    font-size: 26px; cursor: pointer; z-index: 50;
+    display: none; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  #chat-fab:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+  #chat-panel {
+    position: fixed; inset: auto 0 0 0;
+    background: var(--white); border-top: 2.5px solid var(--ink);
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 -5px 0 var(--ink);
+    max-height: 80vh; display: flex; flex-direction: column;
+    z-index: 60; transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  #chat-panel.open { transform: translateY(0); }
+  #chat-header {
+    padding: 16px 20px; border-bottom: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #chat-messages {
+    flex: 1; overflow-y: auto; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 200px;
+  }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 18px; border: 2px solid var(--ink); font-size: 14px; font-weight: 600; line-height: 1.4; }
+  .msg-user { background: var(--blue); color: var(--white); align-self: flex-end; border-radius: 18px 18px 4px 18px; }
+  .msg-pet  { background: var(--gold); color: var(--ink); align-self: flex-start; border-radius: 18px 18px 18px 4px; }
+  .msg-typing { opacity: .6; font-style: italic; }
+  #chat-form { padding: 12px 14px; border-top: 2px solid var(--ink); display: flex; gap: 8px; }
+  #chat-input {
+    flex: 1; border: 2.5px solid var(--ink); border-radius: 14px;
+    padding: 10px 14px; font-family: 'Nunito', sans-serif;
+    font-weight: 700; font-size: 14px; background: var(--sand);
+    outline: none;
+  }
+
+  /* ── SELECT PET SCREEN ── */
+  .species-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .species-card {
+    border: 2.5px solid var(--ink); border-radius: 20px;
+    box-shadow: 4px 4px 0 var(--ink); padding: 12px;
+    cursor: pointer; background: var(--white); text-align: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .species-card:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
+  .species-card.selected { background: #FFF8E1; border-color: var(--gold); box-shadow: 4px 4px 0 var(--gold); }
+  .species-card svg { width: 72px; height: 72px; }
+  .species-name { font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 600; margin-top: 4px; }
+  .species-trait { font-size: 11px; color: var(--leaf); font-weight: 700; margin-top: 2px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--white); border: 2.5px solid var(--ink);
+    border-radius: 16px; box-shadow: 4px 4px 0 var(--ink);
+    padding: 10px 20px; font-weight: 800; font-size: 14px;
+    z-index: 100; transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── DEAD BANNER ── */
+  #dead-banner {
+    display: none; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 16px; background: var(--red); color: var(--white);
+    border: 2px solid var(--ink); border-radius: 16px;
+    font-weight: 800; font-size: 14px; margin-top: 10px;
+  }
+
+  /* ── LEVEL BADGE ── */
+  #level-area { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; justify-content: center; }
+
+  /* ── MISC ── */
+  .text-muted { color: var(--leaf); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+  .gap-8 { gap: 8px; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mb-4 { margin-bottom: 16px; }
+  .mb-2 { margin-bottom: 8px; }
+  .mt-auto { margin-top: auto; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo { font-family: 'Fredoka', sans-serif; font-size: 22px; color: var(--leaf); }
+  hr.divider { border: none; border-top: 2px solid var(--ink); margin: 14px 0; opacity: .12; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SCREEN: AUTH ══════════════ -->
+<div class="screen active" id="screen-auth">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:56px;margin-bottom:8px;">🌿</div>
+      <h1 style="font-size:36px;color:var(--leaf);">Tamabicho</h1>
+      <div class="text-muted" style="margin-top:4px;">Amazônia</div>
+    </div>
+
+    <div class="card" id="auth-login-form">
+      <h2 style="font-size:22px;margin-bottom:14px;">Entrar</h2>
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="voce@amazonia.com">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••">
+      <button class="btn btn-gold btn-full" onclick="doLogin()">Entrar</button>
+      <div style="text-align:center;margin-top:12px;font-size:13px;font-weight:700;">
+        Não tem conta? <span style="color:var(--blue);cursor:pointer;text-decoration:underline;" onclick="toggleAuth()">Criar conta</span>
+      </div>
+    </div>
+
+    <div class="card" id="auth-register-form" style="display:none;">
+      <h2 style="font-size:22px;margin-bottom:14px;">Criar conta</h2>
+      <label>Nome</label>
+      <input type="text" id="reg-name" placeholder="Maria da Selva">
+      <label>Email</label>
+      <input type="email" id="reg-email" placeholder="voce@amazonia.com">
+      <label>Senha</label>
+      <input type="password" id="reg-pass" placeholder="mínimo 4 caracteres">
+      <button class="btn btn-pink btn-full" onclick="doRegister()">Criar conta</button>
+      <div style="text-align:center;margin-top:12px;font-size:13px;font-weight:700;">
+        Já tem conta? <span style="color:var(--blue);cursor:pointer;text-decoration:underline;" onclick="toggleAuth()">Entrar</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: SELECT PET ══════════════ -->
+<div class="screen" id="screen-select">
+  <div class="header">
+    <div>
+      <div class="text-muted" id="select-greeting"></div>
+      <h1 style="font-size:28px;">Adote seu Tamabicho</h1>
+    </div>
+    <button class="btn btn-red" onclick="logout()" style="padding:8px 12px;">Sair</button>
+  </div>
+  <p style="font-size:13px;color:var(--leaf);font-weight:700;margin-bottom:14px;">Escolha um animal da fauna amazônica:</p>
+  <div class="species-grid" id="species-grid"></div>
+  <div class="card">
+    <label>Nome do seu bichinho</label>
+    <input type="text" id="pet-name-input" placeholder="ex: Pepita, Curupira, Mandi..." maxlength="30">
+    <button class="btn btn-leaf btn-full" onclick="adoptPet()">Adotar bichinho 🌿</button>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: DASHBOARD ══════════════ -->
+<div class="screen" id="screen-dash">
+  <div class="header">
+    <div>
+      <div class="text-muted" id="dash-greeting"></div>
+      <h1 style="font-size:26px;" id="dash-pet-name">—</h1>
+    </div>
+    <div class="flex gap-8">
+      <button class="btn" onclick="confirmDelete()" title="Adotar outro" style="padding:8px 12px;">🗑</button>
+      <button class="btn btn-red" onclick="logout()" style="padding:8px 12px;">Sair</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="card" style="padding:16px 18px;">
+    <div class="stat-row">
+      <div class="stat-icon" style="background:#FFF3CD;">🍖</div>
+      <div class="stat-info">
+        <div class="stat-label"><span>Fome</span><span id="val-hunger">0</span></div>
+        <div class="stat-track"><div class="stat-fill" id="bar-hunger" style="background:#F77F00;"></div></div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-icon" style="background:#FFE4F0;">😄</div>
+      <div class="stat-info">
+        <div class="stat-label"><span>Felicidade</span><span id="val-happiness">0</span></div>
+        <div class="stat-track"><div class="stat-fill" id="bar-happiness" style="background:#FF99C8;"></div></div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-icon" style="background:#E0F0FF;">⚡</div>
+      <div class="stat-info">
+        <div class="stat-label"><span>Energia</span><span id="val-energy">0</span></div>
+        <div class="stat-track"><div class="stat-fill" id="bar-energy" style="background:#0077B6;"></div></div>
+      </div>
+    </div>
+    <div class="stat-row" style="margin-bottom:0;">
+      <div class="stat-icon" style="background:#FFE0E3;">❤️</div>
+      <div class="stat-info">
+        <div class="stat-label"><span>Saúde</span><span id="val-health">0</span></div>
+        <div class="stat-track"><div class="stat-fill" id="bar-health" style="background:#E63946;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pet hero -->
+  <div class="card" style="text-align:center;">
+    <div id="level-area">
+      <span class="badge" style="background:var(--gold);color:var(--ink);" id="level-badge">🏆 Nível 1</span>
+      <span class="badge" id="mood-badge" style="background:var(--leaf);">😊 Feliz</span>
+    </div>
+    <div id="avatar-wrap">
+      <div id="pet-svg"></div>
+    </div>
+    <div id="dead-banner">💀 Seu bichinho se foi... adote outro!</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="action-grid" id="action-grid">
+    <button class="action-btn" onclick="doAction('feed')" id="btn-feed">
+      <div class="action-icon" style="background:#FFF3CD;">🍖</div>
+      <span class="action-label">Alimentar</span>
+    </button>
+    <button class="action-btn" onclick="doAction('play')" id="btn-play">
+      <div class="action-icon" style="background:#FFE4F0;">🎮</div>
+      <span class="action-label">Brincar</span>
+    </button>
+    <button class="action-btn" onclick="doAction('sleep')" id="btn-sleep">
+      <div class="action-icon" style="background:#E0F0FF;">🌙</div>
+      <span class="action-label">Dormir</span>
+    </button>
+    <button class="action-btn" onclick="doAction('clean')" id="btn-clean">
+      <div class="action-icon" style="background:#E0FFE8;">💧</div>
+      <span class="action-label">Limpar</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ CHAT FAB + PANEL ══════════════ -->
+<button id="chat-fab" onclick="toggleChat()">💬</button>
+<div id="chat-panel">
+  <div id="chat-header">
+    <div class="flex items-center gap-8">
+      <h3 style="font-size:18px;" id="chat-title">Chat</h3>
+      <span class="badge" id="chat-mood-badge" style="background:var(--leaf);">😊 Feliz</span>
+    </div>
+    <button class="btn" onclick="toggleChat()" style="padding:6px 12px;">✕</button>
+  </div>
+  <div id="chat-messages">
+    <p style="text-align:center;color:var(--leaf);font-size:13px;font-weight:700;padding:30px 0;" id="chat-empty">
+      Diga olá ao seu bichinho! 🌿<br>O humor dele muda a cada mensagem.
+    </p>
+  </div>
+  <div id="chat-form">
+    <input type="text" id="chat-input" placeholder="Digite uma mensagem..." style="margin-bottom:0;">
+    <button class="btn btn-gold" onclick="sendChat()" id="send-btn" style="padding:10px 16px;">➤</button>
+  </div>
+</div>
+
+<!-- ══════════════ TOAST ══════════════ -->
+<div id="toast"></div>
+
+<!-- ══════════════ FIREBASE + LOGIC ══════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, remove }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged, updateProfile }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ── FIREBASE CONFIG ── replace with your own ──
+const firebaseConfig = {
+  apiKey: "FIREBASE_API_KEY",
+  authDomain: "FIREBASE_AUTH_DOMAIN",
+  databaseURL: "FIREBASE_DATABASE_URL",
+  projectId: "FIREBASE_PROJECT_ID",
+  storageBucket: "FIREBASE_STORAGE_BUCKET",
+  messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
+  appId: "FIREBASE_APP_ID"
+};
+
+const fbApp  = initializeApp(firebaseConfig);
+const db     = getDatabase(fbApp);
+const auth   = getAuth(fbApp);
+
+// ── CLAUDE API KEY ──
+const CLAUDE_KEY = ""; // cole sua chave aqui
+
+// ══════════════════════════════════════════
+//  SPECIES DATA
+// ══════════════════════════════════════════
+const SPECIES = {
+  onca: {
+    label: "Onça-pintada", trait: "Feroz, territorial, predadora ágil",
+    color: "#FCA311",
+    svg: `<svg viewBox="0 0 200 200">
+      <ellipse cx="100" cy="115" rx="78" ry="68" fill="#FCA311" stroke="#0D1B0F" stroke-width="4"/>
+      <defs><pattern id="sp" patternUnits="userSpaceOnUse" width="22" height="22">
+        <circle cx="6" cy="6" r="3" fill="#0D1B0F" opacity=".5"/>
+        <circle cx="16" cy="14" r="2.2" fill="#0D1B0F" opacity=".5"/>
+      </pattern></defs>
+      <ellipse cx="100" cy="115" rx="78" ry="68" fill="url(#sp)"/>
+      <circle cx="60" cy="48" r="22" fill="#FCA311" stroke="#0D1B0F" stroke-width="4"/>
+      <circle cx="140" cy="48" r="22" fill="#FCA311" stroke="#0D1B0F" stroke-width="4"/>
+      <circle cx="60" cy="48" r="9" fill="#FF99C8"/>
+      <circle cx="140" cy="48" r="9" fill="#FF99C8"/>
+      <circle cx="78" cy="95" r="10" fill="#FFF" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="122" cy="95" r="10" fill="#FFF" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="80" cy="97" r="4" fill="#0D1B0F"/>
+      <circle cx="124" cy="97" r="4" fill="#0D1B0F"/>
+      <path d="M88 130 Q100 142 112 130" stroke="#0D1B0F" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M95 122 L100 130 L105 122" stroke="#0D1B0F" stroke-width="3" fill="#FF99C8"/>
+    </svg>`
+  },
+  boto: {
+    label: "Boto-cor-de-rosa", trait: "Mítico, brincalhão, cheio de lendas",
+    color: "#FF99C8",
+    svg: `<svg viewBox="0 0 200 200">
+      <ellipse cx="100" cy="115" rx="80" ry="62" fill="#FF99C8" stroke="#0D1B0F" stroke-width="4"/>
+      <path d="M20 110 Q5 90 25 80 L35 105 Z" fill="#FF99C8" stroke="#0D1B0F" stroke-width="4"/>
+      <ellipse cx="120" cy="135" rx="38" ry="14" fill="#FF99C8" stroke="#0D1B0F" stroke-width="4"/>
+      <circle cx="78" cy="95" r="9" fill="#FFF" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="122" cy="95" r="9" fill="#FFF" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="80" cy="97" r="4" fill="#0D1B0F"/>
+      <circle cx="124" cy="97" r="4" fill="#0D1B0F"/>
+      <path d="M85 125 Q100 138 115 125" stroke="#0D1B0F" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </svg>`
+  },
+  tucano: {
+    label: "Tucano", trait: "Colorido, falante, observador das copas",
+    color: "#F77F00",
+    svg: `<svg viewBox="0 0 200 200">
+      <ellipse cx="100" cy="125" rx="70" ry="60" fill="#0D1B0F" stroke="#0D1B0F" stroke-width="3"/>
+      <ellipse cx="100" cy="135" rx="42" ry="28" fill="#FFFFFF"/>
+      <path d="M55 95 Q5 95 15 65 Q40 75 65 85 Z" fill="#FCA311" stroke="#0D1B0F" stroke-width="4"/>
+      <path d="M20 78 Q35 75 50 82" stroke="#E63946" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="85" cy="78" r="14" fill="#FFFFFF" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="89" cy="80" r="6" fill="#0D1B0F"/>
+      <circle cx="91" cy="78" r="2" fill="#FFFFFF"/>
+    </svg>`
+  },
+  coruja: {
+    label: "Coruja-da-Amazônia", trait: "Sábia, noturna, observa tudo em silêncio",
+    color: "#8B6914",
+    svg: `<svg viewBox="0 0 200 200">
+      <ellipse cx="100" cy="118" rx="72" ry="68" fill="#C8A96A" stroke="#0D1B0F" stroke-width="4"/>
+      <path d="M55 50 Q50 25 70 30 L78 55 Z" fill="#C8A96A" stroke="#0D1B0F" stroke-width="3"/>
+      <path d="M145 50 Q150 25 130 30 L122 55 Z" fill="#C8A96A" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="78" cy="92" r="18" fill="#FFF" stroke="#0D1B0F" stroke-width="4"/>
+      <circle cx="122" cy="92" r="18" fill="#FFF" stroke="#0D1B0F" stroke-width="4"/>
+      <circle cx="78" cy="93" r="9" fill="#FCA311" stroke="#0D1B0F" stroke-width="2"/>
+      <circle cx="122" cy="93" r="9" fill="#FCA311" stroke="#0D1B0F" stroke-width="2"/>
+      <circle cx="79" cy="94" r="5" fill="#0D1B0F"/>
+      <circle cx="123" cy="94" r="5" fill="#0D1B0F"/>
+      <path d="M94 112 L100 120 L106 112 Q100 108 94 112Z" fill="#8B6914" stroke="#0D1B0F" stroke-width="2"/>
+      <path d="M70 140 Q100 150 130 140" stroke="#0D1B0F" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>`
+  },
+  cobra: {
+    label: "Sucuri", trait: "Lenta, majestosa, enrolada nos galhos",
+    color: "#2D6A4F",
+    svg: `<svg viewBox="0 0 200 200">
+      <path d="M100 30 Q140 40 150 80 Q160 120 130 140 Q100 160 70 145 Q40 130 45 100 Q50 70 80 65 Q110 60 115 85 Q120 110 100 115 Q80 120 75 105" fill="none" stroke="#2D6A4F" stroke-width="28" stroke-linecap="round"/>
+      <path d="M100 30 Q140 40 150 80 Q160 120 130 140 Q100 160 70 145 Q40 130 45 100 Q50 70 80 65 Q110 60 115 85 Q120 110 100 115 Q80 120 75 105" fill="none" stroke="#74C69D" stroke-width="16" stroke-linecap="round" stroke-dasharray="8 12"/>
+      <ellipse cx="100" cy="30" rx="14" ry="10" fill="#2D6A4F" stroke="#0D1B0F" stroke-width="3"/>
+      <circle cx="95" cy="27" r="4" fill="#FFF" stroke="#0D1B0F" stroke-width="2"/>
+      <circle cx="105" cy="27" r="4" fill="#FFF" stroke="#0D1B0F" stroke-width="2"/>
+      <circle cx="96" cy="28" r="2" fill="#0D1B0F"/>
+      <circle cx="106" cy="28" r="2" fill="#0D1B0F"/>
+      <path d="M97 35 L100 42 L103 35" fill="#E63946" stroke="#0D1B0F" stroke-width="1.5"/>
+    </svg>`
+  },
+  preguica: {
+    label: "Preguiça", trait: "Filosófica, lentíssima, sempre zen",
+    color: "#B5A989",
+    svg: `<svg viewBox="0 0 200 200">
+      <ellipse cx="100" cy="115" rx="72" ry="65" fill="#B5A989" stroke="#0D1B0F" stroke-width="4"/>
+      <ellipse cx="100" cy="118" rx="55" ry="50" fill="#E6D8B8"/>
+      <circle cx="78" cy="100" r="11" fill="#0D1B0F"/>
+      <circle cx="122" cy="100" r="11" fill="#0D1B0F"/>
+      <path d="M70 90 L86 100 M130 90 L114 100" stroke="#0D1B0F" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="100" cy="125" rx="6" ry="4" fill="#0D1B0F"/>
+      <path d="M86 138 Q100 145 114 138" stroke="#0D1B0F" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>`
+  }
+};
+
+// ══════════════════════════════════════════
+//  MOODS
+// ══════════════════════════════════════════
+const MOODS = [
+  "raivoso","preguicoso","esnobe","feliz","calmo","stressado",
+  "maldoso","sarcastico","egocentrico","louco","genio","medroso","corajoso"
+];
+const MOOD_LABEL = {
+  raivoso:"😡 Raivoso", preguicoso:"😴 Preguiçoso", esnobe:"😒 Esnobe",
+  feliz:"😄 Feliz", calmo:"😌 Calmo", stressado:"😰 Stressado",
+  maldoso:"😈 Maldoso", sarcastico:"🙄 Sarcástico", egocentrico:"🦚 Egocêntrico",
+  louco:"🤪 Louco", genio:"🧠 Gênio", medroso:"😨 Medroso", corajoso:"😤 Corajoso"
+};
+const MOOD_COLOR = {
+  raivoso:"#E63946", preguicoso:"#74A57F", esnobe:"#9D4EDD", feliz:"#FCA311",
+  calmo:"#0077B6", stressado:"#F77F00", maldoso:"#5A189A", sarcastico:"#FF99C8",
+  egocentrico:"#FCA311", louco:"#E63946", genio:"#2D6A4F", medroso:"#B5A989", corajoso:"#2D6A4F"
+};
+const MOOD_PERSONALITY = {
+  raivoso:    "Você está irritadíssimo, responde curto, brusco e impaciente. Reclama de tudo.",
+  preguicoso: "Você está com extrema preguiça. Responde com bocejos, frases incompletas.",
+  esnobe:     "Você é arrogante e esnobe. Trata o humano como inferior. Acha-se superior.",
+  feliz:      "Você está extremamente feliz! Tudo é maravilhoso, usa exclamações e elogios.",
+  calmo:      "Você está sereno e zen. Fala com calma, sabedoria e tranquilidade.",
+  stressado:  "Você está nervoso, ansioso, falando rápido, exagerando os problemas.",
+  maldoso:    "Você é malvado, faz comentários ácidos e provocativos, com humor negro.",
+  sarcastico: "Você é mestre do sarcasmo. Tudo é uma ironia fina.",
+  egocentrico:"Você só fala de si mesmo e dos seus feitos incríveis, ignora o humano.",
+  louco:      "Você está completamente maluco, frases sem nexo, ideias absurdas e surreais.",
+  genio:      "Você é um gênio absoluto da Amazônia, fala como um cientista pomposo.",
+  medroso:    "Você está aterrorizado com tudo, voz tremida, cada coisa parece perigosa.",
+  corajoso:   "Você é destemido, fala como um aventureiro épico da floresta amazônica."
+};
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let currentUser = null;
+let pet = null;
+let selectedSpecies = null;
+let chatMessages = [];
+let tickInterval = null;
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function clamp(v, lo=0, hi=100) { return Math.max(lo, Math.min(hi, v)); }
+function showToast(msg, dur=2200) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), dur);
+}
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("chat-fab").style.display = id === "screen-dash" ? "flex" : "none";
+}
+function pickMood(p) {
+  let pool = [...MOODS];
+  if (p.hunger < 30)    pool.push("raivoso","stressado","maldoso","raivoso");
+  if (p.happiness < 30) pool.push("raivoso","esnobe","sarcastico","maldoso");
+  if (p.energy < 30)    pool.push("preguicoso","medroso","calmo","preguicoso");
+  if (p.happiness > 75 && p.hunger > 60) pool.push("feliz","corajoso","genio","feliz","feliz");
+  if (p.health < 40)    pool.push("medroso","stressado","medroso");
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function applyDecay(p) {
+  const last = new Date(p.lastTick).getTime();
+  const mins = (Date.now() - last) / 60000;
+  if (mins < 0.5) return p;
+  p.hunger    = clamp(p.hunger    - Math.round(mins * 0.5));
+  p.happiness = clamp(p.happiness - Math.round(mins * 0.4));
+  p.energy    = clamp(p.energy    - Math.round(mins * 0.3));
+  if (p.hunger < 15 || p.happiness < 15 || p.energy < 10)
+    p.health  = clamp(p.health    - Math.round(mins * 0.4));
+  if (p.health <= 0) p.alive = false;
+  p.lastTick = new Date().toISOString();
+  return p;
+}
+function petPath(uid) { return ref(db, `pets/${uid}`); }
+
+// ══════════════════════════════════════════
+//  FIREBASE AUTH
+// ══════════════════════════════════════════
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    await loadPet();
+  } else {
+    currentUser = null;
+    pet = null;
+    showScreen("screen-auth");
+  }
+});
+
+window.toggleAuth = () => {
+  document.getElementById("auth-login-form").style.display =
+    document.getElementById("auth-login-form").style.display === "none" ? "block" : "none";
+  document.getElementById("auth-register-form").style.display =
+    document.getElementById("auth-register-form").style.display === "none" ? "block" : "none";
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById("login-email").value.trim();
+  const pass  = document.getElementById("login-pass").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showToast("❌ " + (e.code === "auth/invalid-credential" ? "Email ou senha incorretos" : e.message));
+  }
+};
+
+window.doRegister = async () => {
+  const name  = document.getElementById("reg-name").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const pass  = document.getElementById("reg-pass").value;
+  if (!name) return showToast("❌ Informe seu nome");
+  if (pass.length < 4) return showToast("❌ Senha muito curta");
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+  } catch(e) {
+    showToast("❌ " + (e.code === "auth/email-already-in-use" ? "Email já cadastrado" : e.message));
+  }
+};
+
+window.logout = async () => {
+  if (tickInterval) clearInterval(tickInterval);
+  await signOut(auth);
+};
+
+// ══════════════════════════════════════════
+//  LOAD / SAVE PET
+// ══════════════════════════════════════════
+async function loadPet() {
+  const snap = await get(petPath(currentUser.uid));
+  if (snap.exists()) {
+    pet = snap.val();
+    pet = applyDecay(pet);
+    await savePet();
+    goToDash();
+  } else {
+    goToSelect();
+  }
+}
+
+async function savePet() {
+  if (!currentUser || !pet) return;
+  await set(petPath(currentUser.uid), pet);
+}
+
+// ══════════════════════════════════════════
+//  SELECT PET SCREEN
+// ══════════════════════════════════════════
+function goToSelect() {
+  document.getElementById("select-greeting").textContent =
+    "Olá, " + (currentUser.displayName || "aventureiro") + "!";
+  buildSpeciesGrid();
+  showScreen("screen-select");
+}
+
+function buildSpeciesGrid() {
+  const grid = document.getElementById("species-grid");
+  grid.innerHTML = "";
+  Object.entries(SPECIES).forEach(([key, sp]) => {
+    const card = document.createElement("div");
+    card.className = "species-card";
+    card.dataset.key = key;
+    card.innerHTML = `${sp.svg}<div class="species-name">${sp.label}</div><div class="species-trait">${sp.trait}</div>`;
+    card.onclick = () => {
+      document.querySelectorAll(".species-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      selectedSpecies = key;
+    };
+    grid.appendChild(card);
+  });
+}
+
+window.adoptPet = async () => {
+  const name = document.getElementById("pet-name-input").value.trim();
+  if (!selectedSpecies) return showToast("❌ Escolha um animal!");
+  if (!name) return showToast("❌ Dê um nome ao seu bichinho!");
+  const now = new Date().toISOString();
+  pet = {
+    species: selectedSpecies, name,
+    hunger: 80, happiness: 80, energy: 80, health: 100,
+    mood: "feliz", level: 1, xp: 0, alive: true,
+    createdAt: now, lastTick: now
+  };
+  await savePet();
+  chatMessages = [];
+  showToast("🌿 " + name + " adotado(a)!");
+  goToDash();
+};
+
+// ══════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════
+function goToDash() {
+  document.getElementById("dash-greeting").textContent =
+    "Olá, " + (currentUser.displayName || "cuidador") + "!";
+  renderDash();
+  showScreen("screen-dash");
+  if (tickInterval) clearInterval(tickInterval);
+  tickInterval = setInterval(async () => {
+    if (!pet?.alive) return;
+    pet = applyDecay(pet);
+    await savePet();
+    renderDash();
+  }, 60000);
+}
+
+function renderDash() {
+  if (!pet) return;
+  const p = pet;
+  document.getElementById("dash-pet-name").textContent = p.name;
+  ["hunger","happiness","energy","health"].forEach(k => {
+    document.getElementById("val-"+k).textContent = p[k];
+    document.getElementById("bar-"+k).style.width = p[k] + "%";
+  });
+  document.getElementById("level-badge").textContent = "🏆 Nível " + p.level;
+  const mb = document.getElementById("mood-badge");
+  mb.textContent = MOOD_LABEL[p.mood] || "😊 " + p.mood;
+  mb.style.background = MOOD_COLOR[p.mood] || "#FCA311";
+  mb.style.color = ["calmo","maldoso","esnobe","genio","corajoso"].includes(p.mood) ? "#FFF" : "#0D1B0F";
+
+  document.getElementById("pet-svg").innerHTML = SPECIES[p.species]?.svg || "";
+  const svg = document.getElementById("pet-svg");
+  svg.className = "";
+  if (["raivoso","stressado","maldoso"].includes(p.mood)) svg.classList.add("mood-shake");
+  else if (["feliz","corajoso"].includes(p.mood)) svg.classList.add("mood-pulse");
+
+  const alive = p.alive;
+  ["feed","play","sleep","clean"].forEach(a => {
+    document.getElementById("btn-"+a).disabled = !alive;
+  });
+  document.getElementById("dead-banner").style.display = alive ? "none" : "flex";
+  document.getElementById("chat-fab").style.display = alive ? "flex" : "none";
+}
+
+window.doAction = async (action) => {
+  if (!pet?.alive) return;
+  pet = applyDecay(pet);
+  if (action === "feed")  { pet.hunger    = clamp(pet.hunger+25);    pet.happiness = clamp(pet.happiness+3); }
+  if (action === "play")  { pet.happiness = clamp(pet.happiness+25); pet.energy    = clamp(pet.energy-10);  pet.hunger = clamp(pet.hunger-5); }
+  if (action === "sleep") { pet.energy    = clamp(pet.energy+35);    pet.hunger    = clamp(pet.hunger-5); }
+  if (action === "clean") { pet.health    = clamp(pet.health+15);    pet.happiness = clamp(pet.happiness+5); }
+  pet.xp += 5;
+  if (pet.xp >= pet.level * 50) { pet.xp = 0; pet.level++; showToast("⬆️ Subiu para o nível " + pet.level + "!"); }
+  pet.mood = pickMood(pet);
+  pet.lastTick = new Date().toISOString();
+  await savePet();
+  renderDash();
+  const msgs = { feed:"Yummy! 🍖", play:"Que diversão! 🎮", sleep:"Zzz... recarregado 🌙", clean:"Tudo limpinho 💧" };
+  showToast(msgs[action]);
+};
+
+window.confirmDelete = async () => {
+  if (!confirm("Tem certeza? O bichinho e as conversas serão apagados.")) return;
+  if (tickInterval) clearInterval(tickInterval);
+  await remove(petPath(currentUser.uid));
+  pet = null; chatMessages = [];
+  goToSelect();
+};
+
+// ══════════════════════════════════════════
+//  CHAT
+// ══════════════════════════════════════════
+window.toggleChat = () => {
+  document.getElementById("chat-panel").classList.toggle("open");
+  updateChatMoodBadge();
+};
+
+function updateChatMoodBadge() {
+  if (!pet) return;
+  const b = document.getElementById("chat-mood-badge");
+  b.textContent = MOOD_LABEL[pet.mood] || "😊 " + pet.mood;
+  b.style.background = MOOD_COLOR[pet.mood] || "#FCA311";
+  document.getElementById("chat-title").textContent = "Chat com " + pet.name;
+}
+
+function appendMsg(text, side) {
+  const empty = document.getElementById("chat-empty");
+  if (empty) empty.remove();
+  const box = document.getElementById("chat-messages");
+  const div = document.createElement("div");
+  div.className = "msg " + (side === "user" ? "msg-user" : "msg-pet");
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function appendTyping() {
+  const box = document.getElementById("chat-messages");
+  const div = document.createElement("div");
+  div.className = "msg msg-pet msg-typing";
+  div.id = "typing-indicator";
+  div.textContent = "...";
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+window.sendChat = async () => {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text || !pet?.alive) return;
+  input.value = "";
+  document.getElementById("send-btn").disabled = true;
+
+  const newMood = pickMood(pet);
+  pet.mood = newMood;
+  await savePet();
+  updateChatMoodBadge();
+  renderDash();
+
+  appendMsg(text, "user");
+  appendTyping();
+
+  const sp = SPECIES[pet.species];
+  const systemPrompt =
+    `Você é ${pet.name}, um(a) ${sp.label} virtual da Amazônia (${sp.trait}). ` +
+    `Você é um Tamabicho — um bichinho virtual sendo cuidado por um humano. ` +
+    `Status: fome ${pet.hunger}/100, felicidade ${pet.happiness}/100, energia ${pet.energy}/100, saúde ${pet.health}/100, nível ${pet.level}. ` +
+    `HUMOR ATUAL: ${newMood.toUpperCase()}. ${MOOD_PERSONALITY[newMood]} ` +
+    `Responda em português brasileiro, máximo 2 frases curtas. Mantenha o personagem do animal amazônico. Nunca quebre o personagem.`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": CLAUDE_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 160,
+        system: systemPrompt,
+        messages: [
+          ...chatMessages.map(m => ({ role: m.role, content: m.content })),
+          { role: "user", content: text }
+        ]
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.[0]?.text?.trim() || "*te olha em silêncio...*";
+    document.getElementById("typing-indicator")?.remove();
+    appendMsg(reply, "pet");
+    chatMessages.push({ role: "user", content: text });
+    chatMessages.push({ role: "assistant", content: reply });
+    if (chatMessages.length > 40) chatMessages = chatMessages.slice(-40);
+  } catch(e) {
+    document.getElementById("typing-indicator")?.remove();
+    appendMsg("*olha pra você em silêncio...*", "pet");
+  } finally {
+    document.getElementById("send-btn").disabled = false;
+  }
+};
+
+document.getElementById("chat-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") window.sendChat();
+});
+</script>
+</body>
+</html>
