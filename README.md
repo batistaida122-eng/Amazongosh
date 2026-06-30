@@ -1,2 +1,0 @@
-# Amazongosh
-Tamabicho
